@@ -26,6 +26,7 @@ def upload_image():
 
     # Git commit and push
     try:
+        subprocess.run(["git", "pull", "origin", "main", "--rebase"], check=True)
         subprocess.run(["git", "add", "uploads"], check=True)
         subprocess.run(["git", "commit", "-m", f"Added {file.filename}"], check=True)
         subprocess.run(["git", "push", "origin", "main"], check=True)
