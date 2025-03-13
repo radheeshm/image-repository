@@ -1,5 +1,6 @@
 from flask import Flask, request, send_from_directory, render_template, redirect, url_for
 import os
+import subprocess
 
 app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
@@ -18,7 +19,19 @@ def upload_image():
     file = request.files['file']
     if file.filename == '':
         return "No selected file", 400
-    file.save(os.path.join(UPLOAD_FOLDER, file.filename))
+
+    # Save the uploaded file
+    filepath = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(filepath)
+
+    # Git commit and push
+    try:
+        subprocess.run(["git", "add", "uploads"], check=True)
+        subprocess.run(["git", "commit", "-m", f"Added {file.filename}"], check=True)
+        subprocess.run(["git", "push", "origin", "main"], check=True)
+    except subprocess.CalledProcessError as e:
+        return f"Error updating GitHub: {str(e)}", 500
+
     return redirect(url_for('index'))
 
 @app.route('/images/<filename>')
