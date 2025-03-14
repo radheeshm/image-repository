@@ -14,21 +14,25 @@ def index():
 
 @app.route('/upload', methods=['POST'])
 def upload_image():
-    if 'file' not in request.files:
-        return "No file uploaded", 400
-    file = request.files['file']
-    if file.filename == '':
-        return "No selected file", 400
+    if 'files[]' not in request.files:
+        return "No files uploaded", 400
+    
+    files = request.files.getlist('files[]')  # Get multiple files
 
-    # Save the uploaded file
-    filepath = os.path.join(UPLOAD_FOLDER, file.filename)
-    file.save(filepath)
+    if not files or all(f.filename == '' for f in files):
+        return "No selected files", 400
 
-    # Git commit and push
+    uploaded_files = []
+    for file in files:
+        if file.filename:
+            filepath = os.path.join(UPLOAD_FOLDER, file.filename)
+            file.save(filepath)
+            uploaded_files.append(file.filename)
+
+    # Git commit and push changes
     try:
-        subprocess.run(["git", "pull", "origin", "main", "--rebase"], check=True)
         subprocess.run(["git", "add", "uploads"], check=True)
-        subprocess.run(["git", "commit", "-m", f"Added {file.filename}"], check=True)
+        subprocess.run(["git", "commit", "-m", f"Added {', '.join(uploaded_files)}"], check=True)
         subprocess.run(["git", "push", "origin", "main"], check=True)
     except subprocess.CalledProcessError as e:
         return f"Error updating GitHub: {str(e)}", 500

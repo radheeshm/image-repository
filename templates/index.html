@@ -6,17 +6,17 @@
     <title>Image Repository</title>
 </head>
 <body>
-    <h2>Upload Image</h2>
+    <h2>Upload Images</h2>
     <form action="/upload" method="post" enctype="multipart/form-data">
-        <input type="file" name="file">
+        <input type="file" name="files[]" multiple>
         <button type="submit">Upload</button>
     </form>
 
     <h2>Available Images</h2>
-<div>
-    {% for image in images %}
-        <img src="{{ image }}" width="200">
-    {% endfor %}
-</div>
+    <div>
+        {% for image in images %}
+            <img src="{{ image }}" width="200">
+        {% endfor %}
+    </div>
 </body>
 </html>
